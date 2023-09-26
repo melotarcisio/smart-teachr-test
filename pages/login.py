@@ -17,8 +17,6 @@ def try_login(username: str, password: str):
         ui.notify("User not found", color="negative")
         return
 
-    print(user.model_dump())
-
     app.storage.user.update({"username": user.username, "authenticated": True})
     ui.open(app.storage.user.get("referrer_path", "/"))
 

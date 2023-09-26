@@ -31,7 +31,7 @@ class User(BaseModelDB):
 
     table_name: ClassVar = "users"
 
-    id: str
+    id: int
     username: str
     created_at: str
 
