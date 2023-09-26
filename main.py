@@ -1,6 +1,6 @@
 from nicegui import app, ui
 
-from modules.auth import AuthMiddleware
+from core.auth import AuthMiddleware
 from modules.routes import router
 from core.settings import settings
 

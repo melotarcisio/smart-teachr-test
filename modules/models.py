@@ -1,8 +1,8 @@
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 from database import get_db
 from pydantic import BaseModel
-from modules.auth import compare_passwords
+from core.auth import compare_passwords
 
 db = get_db()
 
@@ -33,6 +33,7 @@ class User(BaseModelDB):
 
     id: int
     username: str
+    role: Literal["creator", "consumer"]
     created_at: str
 
     @classmethod

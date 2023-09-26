@@ -20,7 +20,7 @@ def try_login(username: str, password: str):
         return
 
     app.storage.user.update(user.model_dump())
-    ui.open(app.storage.user.get("referrer_path", "/dashboard"))
+    ui.open(app.storage.user.get("referrer_path", f"/dash-{user.role}"))
 
 
 @login_router.page("/login")

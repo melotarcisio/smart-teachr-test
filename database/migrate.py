@@ -1,4 +1,4 @@
-from modules.auth import get_password_hash
+from core.auth import get_password_hash
 from database import get_db
 from core import settings
 
