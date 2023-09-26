@@ -3,7 +3,9 @@ from typing import Optional
 from modules.entities import User
 from fastapi.responses import RedirectResponse
 
-from nicegui import app, ui
+from nicegui import app, ui, APIRouter
+
+login_router = APIRouter()
 
 
 def try_login(username: str, password: str):
@@ -21,6 +23,7 @@ def try_login(username: str, password: str):
     ui.open(app.storage.user.get("referrer_path", "/"))
 
 
+@login_router.page("/login")
 def login() -> Optional[RedirectResponse]:
     if app.storage.user.get("authenticated", False):
         return RedirectResponse("/")

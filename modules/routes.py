@@ -1,9 +1,6 @@
 from nicegui import APIRouter, ui
-from pages.login import login
+from pages.login import login_router
 
 router = APIRouter()
 
-
-@router.page("/login")
-def page():
-    login()
+router.include_router(login_router)
