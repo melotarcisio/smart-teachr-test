@@ -1,9 +1,10 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Models the environment variables used around the application."""
 
+    SECRET: str
     TEST_USER: str
     TEST_PASSWORD: str
 
