@@ -25,7 +25,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request, call_next):
-        if not app.storage.user.get("authenticated", False):
+        if not app.storage.user.get("id", False):
             if (
                 request.url.path in nicegui.globals.page_routes.values()
                 and request.url.path not in unrestricted_page_routes

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from modules.entities import User
+from modules.models import User
 from fastapi.responses import RedirectResponse
 
 from nicegui import app, ui, APIRouter
@@ -19,8 +19,8 @@ def try_login(username: str, password: str):
         ui.notify("User not found", color="negative")
         return
 
-    app.storage.user.update({"username": user.username, "authenticated": True})
-    ui.open(app.storage.user.get("referrer_path", "/"))
+    app.storage.user.update(user.model_dump())
+    ui.open(app.storage.user.get("referrer_path", "/dashboard"))
 
 
 @login_router.page("/login")
