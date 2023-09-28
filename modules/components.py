@@ -1,10 +1,8 @@
+from typing import Literal, List
 from nicegui import ui, app
-from modules.models import User
-from modules.controllers import change_mode, change_to_text, change_to
-from modules.style import load_css
-
-
-primary_color = "rgb(88, 152, 212)"
+from modules.models import User, Role
+from modules.controllers import change_mode, change_to
+from modules.helpers import load_css, primary_color, new_state
 
 
 def top_bar(user: User):
@@ -29,3 +27,31 @@ def top_bar(user: User):
                     on_click=lambda: (app.storage.user.clear(), ui.open("/login")),
                     icon="logout",
                 ).props("outline").props("space-between")
+
+
+def content():
+    ui.card().style(
+        "position: absolute; top: 0; left: 0; bottom: 0; width: 20vw; overflow: auto; padding: 1em"
+    ).classes("bg-gray-100")
+
+    ui.card().style(
+        "position: absolute; top: 0; left: 80vw; bottom: 0; width: 20vw"
+    ).classes("bg-gray-100")
+
+    return ui.card().style(
+        "position: absolute; top: 0; left: 20vw; bottom: 0; width: 60vw; overflow-y: auto; padding-top: 1em"
+    )
+
+
+labels = ("Write a Blog", "Create a Course", "Publishing")
+
+
+def creator_tabs():
+    tab_elements = []
+
+    with ui.tabs().classes("w-full") as tabs:
+        for label in labels:
+            tab_elements.append(ui.tab(label))
+
+    with ui.tab_panels(tabs, value=tab_elements[0]).classes("w-full"):
+        return tuple(ui.tab_panel(tab) for tab in tab_elements)
