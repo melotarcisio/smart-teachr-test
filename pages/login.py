@@ -1,5 +1,6 @@
 from typing import Optional
 
+from core.settings import settings
 from modules.models import User
 from fastapi.responses import RedirectResponse
 
@@ -10,7 +11,7 @@ login_router = APIRouter()
 
 def try_login(username: str, password: str):
     try:
-        user = User.from_db(username, password)
+        user = User.from_username(username, password, auth=True)
     except ValueError:
         ui.notify("Wrong username or password", color="negative")
         return
@@ -29,10 +30,14 @@ def login() -> Optional[RedirectResponse]:
         return RedirectResponse("/")
 
     with ui.card().classes("absolute-center"):
-        username = ui.input("Username").on(
+        with ui.input("Username").on(
             "keydown.enter", lambda: try_login(username.value, password.value)
-        )
-        password = ui.input("Password", password=True, password_toggle_button=True).on(
+        ) as username:
+            ui.tooltip("Test username: " + settings.TEST_USER).classes("right")
+
+        with ui.input("Password", password=True, password_toggle_button=True).on(
             "keydown.enter", lambda: try_login(username.value, password.value)
-        )
+        ) as password:
+            ui.tooltip("Test password: " + settings.TEST_PASSWORD)
+
         ui.button("Log in", on_click=lambda: try_login(username.value, password.value))

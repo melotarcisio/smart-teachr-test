@@ -1,4 +1,5 @@
 from nicegui import app, ui
+from fastapi.responses import RedirectResponse
 
 from core.auth import AuthMiddleware
 from modules.routes import router
@@ -11,12 +12,10 @@ app.include_router(router)
 
 @ui.page("/")
 def main_page() -> None:
-    with ui.column().classes("absolute-center items-center"):
-        ui.label(f'Hello {app.storage.user["username"]}!').classes("text-2xl")
-        ui.button(
-            on_click=lambda: (app.storage.user.clear(), ui.open("/login")),
-            icon="logout",
-        ).props("outline round")
+    with ui.label("Loading..."):
+        user_role = app.storage.user.get("role", "consumer")
+
+        return RedirectResponse(f"/dash-{user_role}")
 
 
 ui.run(storage_secret=settings.SECRET)

@@ -7,9 +7,9 @@ test_hashed_password = get_password_hash(settings.TEST_PASSWORD)
 
 test_user_query = f"""
     INSERT INTO 
-        users (username, password) 
+        users (username, password, role) 
     VALUES 
-        ('{test_username}', '{test_hashed_password}')
+        ('{test_username}', '{test_hashed_password}', 'creator')
     ON CONFLICT DO NOTHING;
 """
 
