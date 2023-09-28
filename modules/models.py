@@ -64,3 +64,56 @@ class User(BaseModelDB):
     @classmethod
     def get_user(cls):
         return cls.from_username(app.storage.user.get("username", ""))
+
+
+class Blog(BaseModelDB):
+    """Models a blog post."""
+
+    table_name: ClassVar = "blogs"
+
+    id: int = None
+    user_id: int
+    title: str
+    content: str
+
+    @classmethod
+    def list_created(cls):
+        user = User.get_user()
+        return [cls(**blog) for blog in db.select(cls.table_name, {"user_id": user.id})]
+
+    @classmethod
+    def list_all(cls):
+        return [cls(**blog) for blog in db.select(cls.table_name)]
+
+    def fill_username(self, username: str) -> "BlogWithUsername":
+        return BlogWithUsername(
+            **self.model_dump(), username=username, table_name=self.table_name
+        )
+
+
+class BlogWithUsername(Blog):
+    username: str
+
+    @classmethod
+    def list_all(cls):
+        query_result = db.select_raw(
+            """
+            SELECT
+                blogs.id as id,
+                blogs.user_id as user_id,
+                blogs.title as title,
+                blogs.content as content,
+                users.username as username
+            FROM blogs
+            INNER JOIN users ON users.id = blogs.user_id
+        """
+        )
+        return [cls(**blog) for blog in query_result]
+
+    @classmethod
+    def list_created(cls):
+        user = User.get_user()
+        return [
+            cls(**blog, username=user.username)
+            for blog in db.select(cls.table_name, {"user_id": user.id})
+        ]

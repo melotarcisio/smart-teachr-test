@@ -1,6 +1,6 @@
 from typing import Literal, List
 from nicegui import ui, app
-from modules.models import User, Role
+from modules.models import User, Role, BlogWithUsername
 from modules.controllers import change_mode, change_to
 from modules.helpers import load_css, primary_color, new_state
 
@@ -55,3 +55,12 @@ def creator_tabs():
 
     with ui.tab_panels(tabs, value=tab_elements[0]).classes("w-full"):
         return tuple(ui.tab_panel(tab) for tab in tab_elements)
+
+
+def blog_thumb(blog: BlogWithUsername):
+    with ui.card().style("margin-bottom: 1em; padding: 0;"):
+        with ui.row().style("width: 100%"):
+            with ui.button().props("outline").classes("w-full").style("padding: 1em;"):
+                ui.icon("description").style("margin-right: 1em;")
+                ui.label(blog.title)
+                ui.label(f"Created by {blog.username}").style("margin-left: auto")

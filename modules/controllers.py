@@ -1,6 +1,6 @@
 from typing import Dict
 from nicegui import ui, app
-from modules.models import User, Role
+from modules.models import User, Role, Blog
 
 
 change_to: Dict[Role, Role] = {"creator": "consumer", "consumer": "creator"}
@@ -17,3 +17,11 @@ def change_mode(user: User, change_to_role: Role):
     user.role = change_to_role
     user.update()
     ui.open("/")
+
+
+def create_blog(title: str, content: str):
+    user = User.get_user()
+    blog = Blog(title=title, content=content, user_id=user.id)
+    blog.save()
+    ui.notify("Blog created successfully", color="positive")
+    return blog

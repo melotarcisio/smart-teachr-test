@@ -207,11 +207,14 @@ class Connection:
     def select(
         self,
         table: str,
-        where: dict,
+        where: dict = None,
         order_by: Optional[Tuple[str, Literal["asc", "desc"]]] = None,
         clause: Optional[Literal["and", "or"]] = "and",
     ) -> Optional[List[Dict[str, Any]]]:
-        query = f"SELECT * FROM {table} WHERE {self.get_where(where, clause=clause)} {self.get_order_by(order_by)}"
+        where_clause = self.get_where(where, clause=clause) if where else "1=1"
+        query = (
+            f"SELECT * FROM {table} WHERE {where_clause} {self.get_order_by(order_by)}"
+        )
         return self.select_raw(query)
 
     def _commit(self) -> None:
