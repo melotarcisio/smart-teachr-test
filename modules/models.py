@@ -66,15 +66,9 @@ class User(BaseModelDB):
         return cls.from_username(app.storage.user.get("username", ""))
 
 
-class Blog(BaseModelDB):
-    """Models a blog post."""
-
-    table_name: ClassVar = "blogs"
-
-    id: int = None
-    user_id: int
+class PostBase(BaseModel):
     title: str
-    content: str
+    user_id: int
 
     @classmethod
     def list_created(cls):
@@ -84,6 +78,15 @@ class Blog(BaseModelDB):
     @classmethod
     def list_all(cls):
         return [cls(**blog) for blog in db.select(cls.table_name)]
+
+
+class Blog(BaseModelDB, PostBase):
+    """Models a blog post."""
+
+    table_name: ClassVar = "blogs"
+
+    id: int = None
+    content: str
 
     def fill_username(self, username: str) -> "BlogWithUsername":
         return BlogWithUsername(
@@ -116,4 +119,46 @@ class BlogWithUsername(Blog):
         return [
             cls(**blog, username=user.username)
             for blog in db.select(cls.table_name, {"user_id": user.id})
+        ]
+
+
+class Course(BaseModelDB, PostBase):
+    table_name: ClassVar = "courses"
+
+    id: int = None
+    description: str
+    url: str
+
+    def fill_username(self, username: str) -> "CourseWithUsername":
+        return CourseWithUsername(
+            **self.model_dump(), username=username, table_name=self.table_name
+        )
+
+
+class CourseWithUsername(Course):
+    username: str
+
+    @classmethod
+    def list_all(cls):
+        query_result = db.select_raw(
+            """
+            SELECT
+                courses.id as id,
+                courses.user_id as user_id,
+                courses.title as title,
+                courses.description as description,
+                courses.url as url,
+                users.username as username
+            FROM courses
+            INNER JOIN users ON users.id = courses.user_id
+        """
+        )
+        return [cls(**course) for course in query_result]
+
+    @classmethod
+    def list_created(cls):
+        user = User.get_user()
+        return [
+            cls(**course, username=user.username)
+            for course in db.select(cls.table_name, {"user_id": user.id})
         ]
