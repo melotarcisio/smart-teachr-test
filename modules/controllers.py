@@ -47,7 +47,10 @@ def create_course(title: str, description: str, file: Tuple[BytesIO, str]):
 
 
 def fetch_owned_posts() -> List[Posts]:
-    return [
-        *BlogWithUsername.list_created(),
-        *CourseWithUsername.list_created(),
-    ]
+    return sorted(
+        [
+            *BlogWithUsername.list_created(),
+            *CourseWithUsername.list_created(),
+        ],
+        key=lambda x: x.created_at,
+    )

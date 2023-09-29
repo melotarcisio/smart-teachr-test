@@ -86,6 +86,7 @@ class Blog(BaseModelDB, PostBase):
     table_name: ClassVar = "blogs"
 
     id: int = None
+    created_at: str = None
     content: str
 
     def fill_username(self, username: str) -> "BlogWithUsername":
@@ -126,6 +127,7 @@ class Course(BaseModelDB, PostBase):
     table_name: ClassVar = "courses"
 
     id: int = None
+    created_at: str = None
     description: str
     url: str
 

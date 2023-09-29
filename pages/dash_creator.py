@@ -6,6 +6,7 @@ from nicegui.events import UploadEventArguments
 
 from modules.components import top_bar, creator_tabs, content, thumb, thumb_panel
 from modules.controllers import create_blog, create_course, fetch_owned_posts
+from modules.helpers import load_class_name
 from modules.models import User
 
 # from modules.helpers import load_css
@@ -23,7 +24,7 @@ def write_a_blog(handle_click: callable):
                 )
 
             editor = ui.editor(placeholder="Type something here").style(
-                "margin-bottom: 3em; height: 60vh; width: 56vw"
+                "margin-bottom: 3em; height: 60vh; width: 100%"
             )
 
             ui.button("Save", on_click=lambda: handle_click(title, editor))
@@ -47,11 +48,11 @@ def create_a_course(handle_click: callable):
         "flex-direction: row;"
         "justify-content: space-evenly;"
         "gap: 2em;"
-        "width: 56vw;"
+        "width: 100%;"
     ):
         with ui.element("div").style("width: 45%"):
             ui.label("Title:").style("text-justify: center;padding-bottom: 1em;")
-            title = ui.input("Type a title for your blog here").style(
+            title = ui.input("Type a title for your course here").style(
                 "width: 80%; padding-bottom: 1em;"
             )
             ui.label("Description:").style("text-justify: center;padding-bottom: 1em;")
@@ -61,11 +62,29 @@ def create_a_course(handle_click: callable):
                 "Save", on_click=lambda: handle_click(title, description, file, upload)
             ).style("margin-top: 2em")
 
-        upload = ui.upload(
-            auto_upload=True,
-            multiple=False,
-            max_files=1,
-            on_upload=lambda e: handle_upload(e, upload),
+        upload_class_name = load_class_name(
+            """
+            content: "Drag a video to upload, or click + ";
+            display: block;
+            position: absolute;
+            top: 40%;
+            font-size: 1.5em;
+            width: 100%;
+            padding: 0 1em;
+            text-align: center;
+        """,
+            "::before",
+        )
+
+        upload = (
+            ui.upload(
+                auto_upload=True,
+                multiple=False,
+                max_files=1,
+                on_upload=lambda e: handle_upload(e, upload),
+            )
+            .classes(upload_class_name)
+            .style("position: relative;")
         )
 
 

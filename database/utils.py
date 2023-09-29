@@ -4,7 +4,8 @@ def normalize(items):
         if item == "" or item is None:
             result.append("null")
         elif isinstance(item, str):
-            result.append(f"'{item}'")
+            escaped = item.replace("'", "''")
+            result.append(f"'{escaped}'")
         elif isinstance(item, bool):
             result.append("true" if item else "false")
         else:

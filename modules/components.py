@@ -2,11 +2,11 @@ from typing import Union
 from nicegui import ui, app
 from modules.models import User, Posts, BlogWithUsername, CourseWithUsername
 from modules.controllers import change_mode, change_to
-from modules.helpers import load_css, primary_color, new_state
+from modules.helpers import load_css, primary_color, new_state, load_class_name
 
 
 def top_bar(user: User):
-    with ui.header(elevated=True).classes("items-center justify-end").style(
+    with ui.header(elevated=True).classes("items-center justify-end w-full").style(
         "height: 6em"
     ):
         with ui.avatar(icon="account_circle").style("scale: 1.3"):
@@ -30,17 +30,31 @@ def top_bar(user: User):
 
 
 def content():
-    ui.card().style(
-        "position: absolute; top: 0; left: 0; bottom: 0; width: 20vw; overflow: auto; padding: 1em"
-    ).classes("bg-gray-100")
+    load_css(
+        """
+    .nicegui-content {
+        padding: 0;
+        height: calc(100vh - 6em);
+    }
+        
+    .page-container {
+        background-color: white;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
 
-    ui.card().style(
-        "position: absolute; top: 0; left: 80vw; bottom: 0; width: 20vw"
-    ).classes("bg-gray-100")
-
-    return ui.card().style(
-        "position: absolute; top: 0; left: 20vw; bottom: 0; width: 60vw; overflow-y: auto; padding-top: 1em"
+    @media (min-width: 1600px) { 
+        .page-container {
+            width: 60vw; 
+            margin-left: 20vw; 
+        }
+    }
+    """
     )
+
+    with ui.element("div").classes("bg-gray-100 h-full w-full"):
+        return ui.element("div").classes("page-container")
 
 
 labels = ("Write a Blog", "Create a Course", "Publishing")
@@ -57,16 +71,89 @@ def creator_tabs():
         return tuple(ui.tab_panel(tab) for tab in tab_elements)
 
 
+def blog_view(blog: BlogWithUsername):
+    editor_class_name = load_class_name(
+        """
+    pointer-events: none;
+    height: 100%;
+    border: unset;
+    """
+    )
+    load_css(
+        f"""
+    .{editor_class_name} > div:first-child {{
+        display: none;
+    }}
+    """
+    )
+    ui.editor(value=blog.content).classes(editor_class_name)
+
+
+def course_view(course: CourseWithUsername):
+    ui.video(course.url).style("width: 100%; height: 100%")
+    ui.label(course.description).style("font-size: 0.8rem").style("margin-top: 1em")
+
+
 text_overflow = (
     "white-space: nowrap;"
     "overflow: hidden;"
     "text-overflow: ellipsis;"
-    "inline-size: 90%"
+    "max-inline-size: 30vw"
 )
+
+
+def show_post(post: Posts):
+    load_css(
+        f"""
+    .dialog-class > div > div {{
+        max-width: 60vw;
+        max-height: 60vh;
+    }}
+    
+    .post-header-font {{
+        place-self: flex-end;
+        {text_overflow}
+    }}
+    
+    .post-content {{
+        width: 100%;
+        padding: 0.5em 1em;
+        height: 80%;
+    }}
+    """,
+    )
+
+    with ui.dialog().classes("dialog-class") as dialog, ui.card().style(
+        "width: 100%; height: 100%;"
+    ):
+        with ui.row().style("width: 100%;").style("border-bottom: 0.7px solid grey;"):
+            with ui.row():
+                ui.label(post.title).style("font-size: 2rem").classes(
+                    "post-header-font"
+                )
+                ui.label(f"Created by {post.username}").style(
+                    "font-size: 1rem"
+                ).classes("post-header-font")
+
+            ui.button(icon="close", on_click=dialog.close).style(
+                "margin-left: auto"
+            ).props("round outline")
+
+        with ui.element("div").classes("post-content"):
+            if isinstance(post, BlogWithUsername):
+                blog_view(post)
+
+            elif isinstance(post, CourseWithUsername):
+                course_view(post)
+
+    return dialog.open
 
 
 def thumb(post: Posts):
     icon = "description" if isinstance(post, BlogWithUsername) else "videocam"
+
+    handle_show = show_post(post)
+
     with ui.card().style(
         "width: 23%; height: 6em; margin-bottom: 2em; position: relative"
     ).classes("bg-gray-100"):
@@ -84,7 +171,7 @@ def thumb(post: Posts):
 
         ui.button(
             "",
-            on_click=lambda: ui.notify("clicked"),
+            on_click=handle_show,
         ).style(
             "position: absolute;"
             "top: 0;"
