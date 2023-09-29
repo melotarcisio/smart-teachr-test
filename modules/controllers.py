@@ -1,7 +1,17 @@
-from typing import Dict
-from nicegui import ui, app
-from modules.models import User, Role, Blog
+from typing import Dict, Tuple, List
+from io import BytesIO
 
+from nicegui import ui, app
+from modules.models import (
+    User,
+    Role,
+    Posts,
+    Blog,
+    Course,
+    BlogWithUsername,
+    CourseWithUsername,
+)
+from modules.storage import store_file
 
 change_to: Dict[Role, Role] = {"creator": "consumer", "consumer": "creator"}
 change_to_text = {key: f"{value.capitalize()} Mode" for key, value in change_to.items()}
@@ -25,3 +35,19 @@ def create_blog(title: str, content: str):
     blog.save()
     ui.notify("Blog created successfully", color="positive")
     return blog
+
+
+def create_course(title: str, description: str, file: Tuple[BytesIO, str]):
+    user = User.get_user()
+    url = store_file(file)
+    course = Course(title=title, description=description, url=url, user_id=user.id)
+    course.save()
+    ui.notify("Course created successfully", color="positive")
+    return course
+
+
+def fetch_owned_posts() -> List[Posts]:
+    return [
+        *BlogWithUsername.list_created(),
+        *CourseWithUsername.list_created(),
+    ]

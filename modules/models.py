@@ -1,4 +1,4 @@
-from typing import ClassVar, Literal
+from typing import ClassVar, Literal, Union
 
 from database import get_db
 from pydantic import BaseModel
@@ -162,3 +162,6 @@ class CourseWithUsername(Course):
             cls(**course, username=user.username)
             for course in db.select(cls.table_name, {"user_id": user.id})
         ]
+
+
+Posts = Union[BlogWithUsername, CourseWithUsername]

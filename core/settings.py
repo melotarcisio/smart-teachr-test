@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     TEST_USER: str
     TEST_PASSWORD: str
 
+    STORAGE_PATH: str
+
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

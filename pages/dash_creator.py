@@ -1,8 +1,12 @@
-from nicegui import ui, APIRouter, app
+from typing import Tuple, Optional
+from io import BytesIO
 
-from modules.components import top_bar, creator_tabs, content, blog_thumb
-from modules.controllers import create_blog
-from modules.models import User, BlogWithUsername
+from nicegui import ui, APIRouter, app
+from nicegui.events import UploadEventArguments
+
+from modules.components import top_bar, creator_tabs, content, thumb, thumb_panel
+from modules.controllers import create_blog, create_course, fetch_owned_posts
+from modules.models import User
 
 # from modules.helpers import load_css
 
@@ -25,25 +29,57 @@ def write_a_blog(handle_click: callable):
             ui.button("Save", on_click=lambda: handle_click(title, editor))
 
 
-def create_a_course():
-    ui.label("create")
+def create_a_course(handle_click: callable):
+    file: Optional[Tuple[BytesIO, str]] = None
+
+    def handle_upload(e: UploadEventArguments, upload):
+        nonlocal file
+
+        if not e.type.startswith("video"):
+            ui.notify("Only videos are allowed", color="negative")
+            upload.reset()
+            return
+
+        file = (e.content, e.name.split(".")[-1])
+
+    with ui.element("div").style(
+        "display: flex;"
+        "flex-direction: row;"
+        "justify-content: space-evenly;"
+        "gap: 2em;"
+        "width: 56vw;"
+    ):
+        with ui.element("div").style("width: 45%"):
+            ui.label("Title:").style("text-justify: center;padding-bottom: 1em;")
+            title = ui.input("Type a title for your blog here").style(
+                "width: 80%; padding-bottom: 1em;"
+            )
+            ui.label("Description:").style("text-justify: center;padding-bottom: 1em;")
+            description = ui.textarea("Type a description for your blog here")
+
+            ui.button(
+                "Save", on_click=lambda: handle_click(title, description, file, upload)
+            ).style("margin-top: 2em")
+
+        upload = ui.upload(
+            auto_upload=True,
+            multiple=False,
+            max_files=1,
+            on_upload=lambda e: handle_upload(e, upload),
+        )
 
 
 @ui.refreshable
-def publishing(blogs: BlogWithUsername):
-    with ui.element("div") as publish_component:
-        for blog in blogs:
-            blog_thumb(blog)
-
-    return publish_component
-
-
-dash_components = (write_a_blog, create_a_course, publishing)
+def publishing():
+    posts = fetch_owned_posts()
+    with thumb_panel():
+        for post in posts:
+            thumb(post)
 
 
 @dash_router.page("/dash-creator")
 def dashboard():
-    user = User(**app.storage.user)
+    user = User.get_user()
 
     top_bar(user)
 
@@ -52,7 +88,7 @@ def dashboard():
             write_a_blog_tab, create_a_course_tab, publishing_tab = creator_tabs()
 
             with publishing_tab:
-                publishing(BlogWithUsername.list_created())
+                publishing()
 
             with write_a_blog_tab:
 
@@ -60,9 +96,22 @@ def dashboard():
                     create_blog(title.value, editor.value)
                     for element in [title, editor]:
                         element.value = ""
-                    publishing.refresh(BlogWithUsername.list_created())
+                    publishing.refresh()
 
                 write_a_blog(handle_create_blog)
 
-            with create_a_course_tab:
-                create_a_course()
+            with create_a_course_tab.style("width: 100%"):
+
+                def handle_create_course(title, description, file, upload):
+                    if not title.value or not description.value or not file:
+                        return ui.notify("Please fill all the fields", color="negative")
+
+                    create_course(title.value, description.value, file)
+
+                    upload.reset()
+                    for element in [title, description]:
+                        element.value = ""
+
+                    publishing.refresh()
+
+                create_a_course(handle_create_course)

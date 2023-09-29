@@ -1,6 +1,6 @@
-from typing import Literal, List
+from typing import Union
 from nicegui import ui, app
-from modules.models import User, Role, BlogWithUsername
+from modules.models import User, Posts, BlogWithUsername, CourseWithUsername
 from modules.controllers import change_mode, change_to
 from modules.helpers import load_css, primary_color, new_state
 
@@ -57,10 +57,51 @@ def creator_tabs():
         return tuple(ui.tab_panel(tab) for tab in tab_elements)
 
 
-def blog_thumb(blog: BlogWithUsername):
-    with ui.card().style("margin-bottom: 1em; padding: 0;"):
-        with ui.row().style("width: 100%"):
-            with ui.button().props("outline").classes("w-full").style("padding: 1em;"):
-                ui.icon("description").style("margin-right: 1em;")
-                ui.label(blog.title)
-                ui.label(f"Created by {blog.username}").style("margin-left: auto")
+text_overflow = (
+    "white-space: nowrap;"
+    "overflow: hidden;"
+    "text-overflow: ellipsis;"
+    "inline-size: 90%"
+)
+
+
+def thumb(post: Posts):
+    icon = "description" if isinstance(post, BlogWithUsername) else "videocam"
+    with ui.card().style(
+        "width: 23%; height: 6em; margin-bottom: 2em; position: relative"
+    ).classes("bg-gray-100"):
+        with ui.element("div").style(
+            "display: flex; align-items: center; gap: 1em; width: 100%"
+        ):
+            ui.icon(icon).style("scale: 3;")
+            with ui.element("div").style(
+                "display: flex; flex-direction: column; justify-content: space-evenly; width: 100%"
+            ):
+                ui.label(post.title).style(f"font-size: 1.5rem;{text_overflow}")
+                ui.label(f"Created by {post.username}").style(
+                    f"font-size: 0.8rem; {text_overflow}"
+                )
+
+        ui.button(
+            "",
+            on_click=lambda: ui.notify("clicked"),
+        ).style(
+            "position: absolute;"
+            "top: 0;"
+            "right: 0;"
+            "left: 0;"
+            "right: 0;"
+            "bottom: 0;"
+            "opacity: 0;",
+        )
+
+
+def thumb_panel():
+    return ui.element("div").style(
+        "width: 100%;"
+        "height: 100%;"
+        "display: flex;"
+        "flex-direction: row;"
+        "flex-wrap: wrap;"
+        "gap: 2%"
+    )
