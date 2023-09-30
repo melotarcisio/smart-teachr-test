@@ -81,7 +81,7 @@ def leveshtein(str1: str, str2: str):
     return distances[-1]
 
 
-def filter_by_leveinshtein(posts: List[Post], filter_by):
+def filter_by_leveinshtein(posts: List[Post], filter_by: str):
     if len(filter_by) < 3:
         return posts
 
@@ -89,7 +89,7 @@ def filter_by_leveinshtein(posts: List[Post], filter_by):
 
     for post in posts:
         distance = leveshtein(post.title, filter_by)
-        if distance < 5:
+        if distance < 5 or post.title.lower().startswith(filter_by.lower()):
             post_distances.append((post, distance))
 
     return [post for post, _ in sorted(post_distances, key=lambda x: x[1])]
