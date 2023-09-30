@@ -55,14 +55,34 @@ def create_a_course(handle_click: callable):
 
         file = (e.content, e.name.split(".")[-1])
 
-    with ui.element("div").style(
-        "display: flex;"
-        "flex-direction: row;"
-        "justify-content: space-evenly;"
-        "gap: 2em;"
-        "width: 100%;"
-    ):
-        with ui.element("div").style("width: 45%"):
+    container_class_name = load_class_name(
+        """
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        gap: 2em;
+        width: 100%;
+    """,
+        include_css="""
+        .$CLASS_NAME > div {
+            width: 45%;
+        }
+        
+        
+    @media (max-width: 768px) {
+        .$CLASS_NAME {
+            flex-direction: column-reverse;
+        }
+        
+        .$CLASS_NAME > div {
+            width: 100%;
+        }
+    }
+    """,
+    )
+
+    with ui.element("div").classes(container_class_name):
+        with ui.element("div"):
             ui.label("Title:").style("text-justify: center;padding-bottom: 1em;")
             title = ui.input("Type a title for your course here").style(
                 "width: 80%; padding-bottom: 1em;"

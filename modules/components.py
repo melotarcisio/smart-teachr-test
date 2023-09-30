@@ -138,9 +138,28 @@ def thumb(post: Post):
 
     handle_show = show_post(post)
 
-    with ui.card().style(
-        "width: 23%; height: 6em; margin-bottom: 2em; position: relative"
-    ).classes("bg-gray-100"):
+    thumb_class_name = load_class_name(
+        """
+        width: 23%; 
+        height: 6em; 
+        margin-bottom: 2em; 
+        position: relative;
+    """,
+        include_css="""
+            @media (max-width: 1024px) {
+                .$CLASS_NAME {
+                    width: 45%;
+                }
+            }
+            @media (max-width: 768px) {
+                .$CLASS_NAME {
+                    width: 100%;
+                }
+            }
+    """,
+    )
+
+    with ui.card().classes(f"bg-gray-100 {thumb_class_name}"):
         with ui.element("div").style(
             "display: flex; align-items: center; gap: 1em; width: 100%"
         ):
