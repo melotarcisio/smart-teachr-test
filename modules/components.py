@@ -1,35 +1,17 @@
 from typing import Union
 from nicegui import ui, app
-from modules.models import User, Posts, BlogWithUsername, CourseWithUsername
+from modules.models import User, Post, BlogWithUsername, CourseWithUsername, Action
 from modules.controllers import change_mode, change_to
-from modules.helpers import load_css, primary_color, new_state, load_class_name
+from modules.helpers import (
+    load_css,
+    primary_color,
+    new_state,
+    load_class_name,
+    get_many_time_ago,
+)
 
 
-def top_bar(user: User):
-    with ui.header(elevated=True).classes("items-center justify-end w-full").style(
-        "height: 6em"
-    ):
-        with ui.avatar(icon="account_circle").style("scale: 1.3"):
-            with ui.menu().classes("column").style(
-                "height: 15em, width: 7em; padding: 0.5em"
-            ):
-                ui.label(user.role).style("font-size: 1.5rem").classes(
-                    "uppercase text-center"
-                ).style(f"color: {primary_color}")
-                ui.separator().style("margin: 1em 0")
-                ui.button(
-                    change_to[user.role],
-                    on_click=lambda: change_mode(user, change_to[user.role]),
-                    icon="change_circle",
-                ).props("outline").props("no-wrap").style("margin-bottom: 1em")
-                ui.button(
-                    "Logout",
-                    on_click=lambda: (app.storage.user.clear(), ui.open("/login")),
-                    icon="logout",
-                ).props("outline").props("space-between")
-
-
-def content():
+def content(class_name: str = ""):
     load_css(
         """
     .nicegui-content {
@@ -54,7 +36,7 @@ def content():
     )
 
     with ui.element("div").classes("bg-gray-100 h-full w-full"):
-        return ui.element("div").classes("page-container")
+        return ui.element("div").classes(f"page-container {class_name}")
 
 
 labels = ("Write a Blog", "Create a Course", "Publishing")
@@ -102,27 +84,29 @@ text_overflow = (
 )
 
 
-def show_post(post: Posts):
+def load_show_modal_css():
     load_css(
         f"""
-    .dialog-class > div > div {{
-        max-width: 60vw;
-        max-height: 60vh;
-    }}
-    
-    .post-header-font {{
-        place-self: flex-end;
-        {text_overflow}
-    }}
-    
-    .post-content {{
-        width: 100%;
-        padding: 0.5em 1em;
-        height: 80%;
-    }}
-    """,
+        .dialog-class > div > div {{
+            max-width: 60vw;
+            max-height: 60vh;
+        }}
+        
+        .post-header-font {{
+            place-self: flex-end;
+            {text_overflow}
+        }}
+        
+        .post-content {{
+            width: 100%;
+            padding: 0.5em 1em;
+            height: 80%;
+        }}
+        """,
     )
 
+
+def show_post(post: Post):
     with ui.dialog().classes("dialog-class") as dialog, ui.card().style(
         "width: 100%; height: 100%;"
     ):
@@ -149,7 +133,7 @@ def show_post(post: Posts):
     return dialog.open
 
 
-def thumb(post: Posts):
+def thumb(post: Post):
     icon = "description" if isinstance(post, BlogWithUsername) else "videocam"
 
     handle_show = show_post(post)
@@ -186,9 +170,82 @@ def thumb(post: Posts):
 def thumb_panel():
     return ui.element("div").style(
         "width: 100%;"
-        "height: 100%;"
+        "height: auto;"
         "display: flex;"
         "flex-direction: row;"
         "flex-wrap: wrap;"
         "gap: 2%"
     )
+
+
+def history():
+    actions = Action.list_user_actions()
+
+    for action in actions:
+        icon = (
+            "description" if isinstance(action.post, BlogWithUsername) else "videocam"
+        )
+        handle_show = show_post(action.post)
+        label = (
+            action.action.capitalize() + "ed at " + get_many_time_ago(action.created_at)
+        )
+
+        with ui.card().style(
+            "width: 23%; height: 6em; margin-bottom: 2em; position: relative"
+        ).classes("bg-gray-100"):
+            with ui.element("div").style(
+                "display: flex; align-items: center; gap: 1em; width: 100%"
+            ):
+                ui.icon(icon).style("scale: 3;")
+                with ui.element("div").style(
+                    "display: flex; flex-direction: column; justify-content: space-evenly; width: 100%"
+                ):
+                    ui.label(action.post.title).style(
+                        f"font-size: 1.5rem;{text_overflow}"
+                    )
+                    ui.label(label).style(f"font-size: 0.8rem; {text_overflow}")
+
+            ui.button(
+                "",
+                on_click=handle_show,
+            ).style(
+                "position: absolute;"
+                "top: 0;"
+                "right: 0;"
+                "left: 0;"
+                "right: 0;"
+                "bottom: 0;"
+                "opacity: 0;",
+            )
+
+
+@ui.refreshable
+def top_bar(user: User):
+    with ui.header(elevated=True).classes("items-center w-full").style(
+        "height: 6em; justify-content: space-between;"
+    ):
+        with ui.avatar(
+            icon="manage_search",
+        ).style("border: unset; scale: 1.5; position: relative;"):
+            with ui.menu():
+                with thumb_panel():
+                    history()
+
+        with ui.avatar(icon="account_circle").style("scale: 1.3"):
+            with ui.menu().classes("column").style(
+                "height: 15em, width: 7em; padding: 0.5em"
+            ):
+                ui.label(user.role).style("font-size: 1.5rem").classes(
+                    "uppercase text-center"
+                ).style(f"color: {primary_color}")
+                ui.separator().style("margin: 1em 0")
+                ui.button(
+                    change_to[user.role],
+                    on_click=lambda: change_mode(user, change_to[user.role]),
+                    icon="change_circle",
+                ).props("outline").props("no-wrap").style("margin-bottom: 1em")
+                ui.button(
+                    "Logout",
+                    on_click=lambda: (app.storage.user.clear(), ui.open("/login")),
+                    icon="logout",
+                ).props("outline").props("space-between")

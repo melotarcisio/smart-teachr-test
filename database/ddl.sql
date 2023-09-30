@@ -22,3 +22,12 @@ CREATE TABLE IF NOT EXISTS courses (
     user_id INTEGER NOT NULL REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS actions (
+    id SERIAL PRIMARY KEY,
+    action TEXT NOT NULL,
+    reference_id INTEGER NOT NULL,
+    reference_table TEXT NOT NULL,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

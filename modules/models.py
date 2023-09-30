@@ -1,4 +1,4 @@
-from typing import ClassVar, Literal, Union
+from typing import ClassVar, Literal, Union, List
 
 from database import get_db
 from pydantic import BaseModel
@@ -19,7 +19,7 @@ class BaseModelDB(BaseModel):
         return model
 
     def save(self):
-        db.upsert(self.table_name, self.model_dump(exclude=["pk"]), [self.pk])
+        return db.insert_dict(self.table_name, self.model_dump(exclude=["pk"]), self.pk)
 
     def update(self):
         data = self.model_dump()
@@ -107,6 +107,7 @@ class BlogWithUsername(Blog):
                 blogs.user_id as user_id,
                 blogs.title as title,
                 blogs.content as content,
+                blogs.created_at as created_at,
                 users.username as username
             FROM blogs
             INNER JOIN users ON users.id = blogs.user_id
@@ -150,6 +151,7 @@ class CourseWithUsername(Course):
                 courses.title as title,
                 courses.description as description,
                 courses.url as url,
+                courses.created_at as created_at,
                 users.username as username
             FROM courses
             INNER JOIN users ON users.id = courses.user_id
@@ -166,4 +168,71 @@ class CourseWithUsername(Course):
         ]
 
 
-Posts = Union[BlogWithUsername, CourseWithUsername]
+Post = Union[BlogWithUsername, CourseWithUsername]
+
+
+ActionType = Literal["create", "see"]
+
+
+class Action(BaseModelDB):
+    table_name: ClassVar = "actions"
+
+    id: int = None
+    reference_id: int = None
+    reference_table: Literal["blogs", "courses"] = None
+    created_at: str = None
+
+    post: Post = None
+
+    action: ActionType
+    user_id: int
+
+    def save(self):
+        db.upsert(self.table_name, self.model_dump(exclude=["pk", "post"]), [self.pk])
+
+    @classmethod
+    def list_user_actions(cls) -> List["Action"]:
+        user = User.get_user()
+        result = db.select_raw(
+            f"""
+        SELECT DISTINCT
+            a.id as id,
+            a.action as action,
+            coalesce(b.id, c.id) as reference_id,
+            a.reference_table as reference_table,
+            a.created_at as created_at,
+            coalesce(b.title, c.title) as title,
+            b.content as content,
+            c.description as description,
+            c.url as url
+        FROM actions a
+        LEFT JOIN blogs b ON a.reference_id = b.id
+        LEFT JOIN courses c ON a.reference_id = c.id
+        WHERE a.user_id = {user.id}
+        ORDER BY a.created_at DESC
+        """
+        )
+
+        data = []
+        for row in result:
+            PostClass = (
+                BlogWithUsername
+                if row["reference_table"] == "blogs"
+                else CourseWithUsername
+            )
+            post_data = {
+                k: v for k, v in row.items() if k in PostClass.__fields__.keys()
+            }
+
+            action_data = {k: v for k, v in row.items() if k in cls.__fields__.keys()}
+            data += [
+                cls(
+                    **action_data,
+                    user_id=user.id,
+                    post=PostClass(
+                        **post_data, username=user.username, user_id=user.id
+                    ),
+                )
+            ]
+
+        return data

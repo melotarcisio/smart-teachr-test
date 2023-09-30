@@ -4,8 +4,19 @@ from io import BytesIO
 from nicegui import ui, APIRouter, app
 from nicegui.events import UploadEventArguments
 
-from modules.components import top_bar, creator_tabs, content, thumb, thumb_panel
-from modules.controllers import create_blog, create_course, fetch_owned_posts
+from modules.components import (
+    top_bar,
+    creator_tabs,
+    content,
+    thumb,
+    thumb_panel,
+    load_show_modal_css,
+)
+from modules.controllers import (
+    create_blog,
+    create_course,
+    fetch_owned_posts,
+)
 from modules.helpers import load_class_name
 from modules.models import User
 
@@ -98,6 +109,7 @@ def publishing():
 
 @dash_router.page("/dash-creator")
 def dashboard():
+    load_show_modal_css()
     user = User.get_user()
 
     top_bar(user)
@@ -132,5 +144,6 @@ def dashboard():
                         element.value = ""
 
                     publishing.refresh()
+                    top_bar.refresh()
 
                 create_a_course(handle_create_course)
