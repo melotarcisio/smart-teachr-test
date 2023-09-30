@@ -12,3 +12,5 @@ RUN curl -sSL https://install.python-poetry.org | \
 # Install dependencies
 COPY ./ /app/
 RUN poetry install --no-root
+
+CMD [ "bash", "-c", "python -m database.migrate && poetry run python -m main" ]
