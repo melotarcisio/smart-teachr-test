@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Tuple, Callable, List, Type
+from typing import List
 
 from nicegui import ui
 from hashlib import md5
@@ -60,19 +60,6 @@ def load_class_name(css: str, selector: str = "", include_css: str = ""):
     ui.add_head_html(style_tag)
 
     return class_name
-
-
-T = TypeVar("T")
-
-
-def new_state(initial_value: T) -> Tuple[T, Callable[[T], None]]:
-    state = initial_value
-
-    def set_state(new_value: Any):
-        nonlocal state
-        state = new_value
-
-    return state, set_state
 
 
 def leveshtein(str1: str, str2: str):

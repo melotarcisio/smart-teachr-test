@@ -5,7 +5,6 @@ from modules.controllers import change_mode, change_to
 from modules.helpers import (
     load_css,
     primary_color,
-    new_state,
     load_class_name,
     get_many_time_ago,
 )
@@ -32,6 +31,7 @@ def content(class_name: str = ""):
             margin-left: 20vw; 
         }
     }
+
     """
     )
 
@@ -222,17 +222,27 @@ def history():
 
 @ui.refreshable
 def top_bar(user: User):
+    cursor_pointer = load_class_name(
+        """
+        cursor: pointer;
+    """
+    )
+
     with ui.header(elevated=True).classes("items-center w-full").style(
         "height: 6em; justify-content: space-between;"
     ):
         with ui.avatar(
             icon="manage_search",
-        ).style("border: unset; scale: 1.5; position: relative;"):
+        ).style(
+            "scale: 1.5; position: relative;"
+        ).classes(cursor_pointer):
             with ui.menu():
                 with ui.element("div").style("width: auto;"):
                     history()
 
-        with ui.avatar(icon="account_circle").style("scale: 1.3"):
+        with ui.avatar(icon="account_circle").style("scale: 1.3").classes(
+            cursor_pointer
+        ):
             with ui.menu().classes("column").style(
                 "height: 15em, width: 7em; padding: 0.5em"
             ):
