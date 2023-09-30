@@ -9,24 +9,15 @@ This is an e-learning platform that allows course creators to upload video or bl
 
 This application is built with the Python language and uses NiceGUI for its graphical user interface. It utilizes Docker for build the environment, Postgres for database tracking, and Oracle storage for data preservation.
 
-### Language:
-- Python 3.10
+## Check it out
 
-### GUI:
-- [NiceGui](https://nicegui.io/)
+You can check out the application [here](https://smart-teachr.onrender.com).
 
-### Database:
-- Postgres
-
-### Storage:
-- Oracle Storage
-
-### Containerization:
-- Docker
 
 ## Setting up for Development
 
 These instructions will get you a copy of the project up and running on your local machine for development purposes.
+As the environment I deployed to is free (render), slowdowns can occur.
 
 ### Prerequisites
 
