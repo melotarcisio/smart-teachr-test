@@ -2,6 +2,7 @@ from nicegui import ui, APIRouter, app
 
 from modules.components import (
     top_bar,
+    history,
     content,
     thumb_panel,
     blog_view,
@@ -38,6 +39,7 @@ def post_wrapper(post: Post):
         start_show = show_post(post)
         start_show()
         register_action("see", post)
+        history.refresh()
 
     post_class_name = load_class_name(
         """

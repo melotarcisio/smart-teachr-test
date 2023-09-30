@@ -6,6 +6,7 @@ from nicegui.events import UploadEventArguments
 
 from modules.components import (
     top_bar,
+    history,
     creator_tabs,
     content,
     thumb,
@@ -128,6 +129,7 @@ def dashboard():
                     for element in [title, editor]:
                         element.value = ""
                     publishing.refresh()
+                    history.refresh()
 
                 write_a_blog(handle_create_blog)
 
@@ -144,6 +146,6 @@ def dashboard():
                         element.value = ""
 
                     publishing.refresh()
-                    top_bar.refresh()
+                    history.refresh()
 
                 create_a_course(handle_create_course)

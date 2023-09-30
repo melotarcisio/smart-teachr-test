@@ -178,6 +178,7 @@ def thumb_panel():
     )
 
 
+@ui.refreshable
 def history():
     actions = Action.list_user_actions()
 
@@ -191,10 +192,10 @@ def history():
         )
 
         with ui.card().style(
-            "width: 23%; height: 6em; margin-bottom: 2em; position: relative"
+            "width: 100%; height: 6em; margin-bottom: 0.2em; position: relative; padding: 0 1em"
         ).classes("bg-gray-100"):
             with ui.element("div").style(
-                "display: flex; align-items: center; gap: 1em; width: 100%"
+                "display: flex; align-items: center; gap: 1em; width: 100%; height: 100%"
             ):
                 ui.icon(icon).style("scale: 3;")
                 with ui.element("div").style(
@@ -228,7 +229,7 @@ def top_bar(user: User):
             icon="manage_search",
         ).style("border: unset; scale: 1.5; position: relative;"):
             with ui.menu():
-                with thumb_panel():
+                with ui.element("div").style("width: auto;"):
                     history()
 
         with ui.avatar(icon="account_circle").style("scale: 1.3"):
