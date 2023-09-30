@@ -1,3 +1,4 @@
+import requests
 from uuid import uuid4
 import os
 from typing import Tuple
@@ -9,12 +10,17 @@ os.makedirs(settings.STORAGE_PATH, exist_ok=True)
 
 def store_file(file: Tuple[BytesIO, str]):
     content, ext = file
-    local_path = os.path.join(settings.STORAGE_PATH, f"{uuid4()}.{ext}")
-    with open(local_path, "wb") as f:
-        content.seek(0)
-        f.write(content.read())
+    content.seek(0)
 
-    return local_path
+    url = f"{settings.STORAGE_PATH}{uuid4()}.{ext}"
+
+    if url.startswith("https://"):
+        requests.put(url, data=content.read())
+    else:
+        with open(url, "wb") as f:
+            f.write(content.read())
+
+    return url
 
 
 def load_file(path: str):
