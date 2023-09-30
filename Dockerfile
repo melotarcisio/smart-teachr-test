@@ -10,7 +10,7 @@ RUN curl -sSL https://install.python-poetry.org | \
     poetry config virtualenvs.create false
 
 # Install dependencies
-COPY ./pyproject.toml ./poetry.lock /app/
+COPY ./ /app/
 RUN poetry install --no-root
 
 CMD [ "bash", "-c", "python -m database.migrate && poetry run python -m main" ]
