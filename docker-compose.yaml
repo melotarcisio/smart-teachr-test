@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.local
     networks:
       - app_net
     ports:
