@@ -5,7 +5,8 @@ from typing import Tuple
 from io import BytesIO
 from core.settings import settings
 
-os.makedirs(settings.STORAGE_PATH, exist_ok=True)
+if not settings.STORAGE_PATH.startswith("https://"):
+    os.makedirs(settings.STORAGE_PATH, exist_ok=True)
 
 
 def store_file(file: Tuple[BytesIO, str]):
