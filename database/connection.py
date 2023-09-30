@@ -24,8 +24,8 @@ def connect(tentative: int = 10) -> psycopg2.extensions.connection:
         host = settings.POSTGRES_SERVER
         user = settings.POSTGRES_USER
         password = settings.POSTGRES_PASSWORD
-        port = settings.DB_PORT or 5432
-        dbname = "postgres"
+        port = settings.DB_PORT
+        dbname = settings.POSTGRES_DB
         conn_string = (
             f"host={host} user={user} dbname={dbname} password={password} port={port}"
         )
