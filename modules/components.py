@@ -102,6 +102,12 @@ def load_show_modal_css():
             padding: 0.5em 1em;
             height: 80%;
         }}
+        
+        @media (max-width: 1024px) {{
+            .dialog-class > div > div {{
+                max-width: 100vw;
+            }}
+        }}
         """,
     )
 
@@ -197,6 +203,13 @@ def thumb_panel():
     )
 
 
+def get_action_label(action: Action, created_at: str):
+    return {
+        "see": f"Seen at {get_many_time_ago(created_at)}",
+        "create": f"Created at {get_many_time_ago(created_at)}",
+    }[action]
+
+
 @ui.refreshable
 def history():
     actions = Action.list_user_actions()
@@ -206,9 +219,6 @@ def history():
             "description" if isinstance(action.post, BlogWithUsername) else "videocam"
         )
         handle_show = show_post(action.post)
-        label = (
-            action.action.capitalize() + "ed at " + get_many_time_ago(action.created_at)
-        )
 
         with ui.card().style(
             "width: 100%; height: 6em; margin-bottom: 0.2em; position: relative; padding: 0 1em"
@@ -223,7 +233,9 @@ def history():
                     ui.label(action.post.title).style(
                         f"font-size: 1.5rem;{text_overflow}"
                     )
-                    ui.label(label).style(f"font-size: 0.8rem; {text_overflow}")
+                    ui.label(get_action_label(action.action, action.created_at)).style(
+                        f"font-size: 0.8rem; {text_overflow}"
+                    )
 
             ui.button(
                 "",

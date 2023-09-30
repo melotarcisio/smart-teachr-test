@@ -1,3 +1,4 @@
+import sys
 from typing import Tuple, Optional
 from io import BytesIO
 
@@ -46,13 +47,21 @@ def create_a_course(handle_click: callable):
     file: Optional[Tuple[BytesIO, str]] = None
 
     def handle_upload(e: UploadEventArguments, upload):
+        print(e, "size: ", sys.getsizeof(e.content))
         nonlocal file
 
+        max_size = 1024 * 1024 * 200
         if not e.type.startswith("video"):
             ui.notify("Only videos are allowed", color="negative")
             upload.reset()
             return
+        elif sys.getsizeof(e.content.read()) > max_size:
+            ui.notify(f"File size must be less than {max_size} bytes", color="negative")
+            upload.reset()
+            return
 
+        upload.classes("")
+        e.content.seek(0)
         file = (e.content, e.name.split(".")[-1])
 
     container_class_name = load_class_name(
@@ -81,6 +90,20 @@ def create_a_course(handle_click: callable):
     """,
     )
 
+    upload_class_name = load_class_name(
+        """
+        content: "Drag a video to upload, or click + ";
+        display: block;
+        position: absolute;
+        top: 40%;
+        font-size: 1.5em;
+        width: 100%;
+        padding: 0 1em;
+        text-align: center;
+    """,
+        "::after",
+    )
+
     with ui.element("div").classes(container_class_name):
         with ui.element("div"):
             ui.label("Title:").style("text-justify: center;padding-bottom: 1em;")
@@ -93,20 +116,6 @@ def create_a_course(handle_click: callable):
             ui.button(
                 "Save", on_click=lambda: handle_click(title, description, file, upload)
             ).style("margin-top: 2em")
-
-        upload_class_name = load_class_name(
-            """
-            content: "Drag a video to upload, or click + ";
-            display: block;
-            position: absolute;
-            top: 40%;
-            font-size: 1.5em;
-            width: 100%;
-            padding: 0 1em;
-            text-align: center;
-        """,
-            "::before",
-        )
 
         upload = (
             ui.upload(

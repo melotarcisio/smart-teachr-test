@@ -74,6 +74,12 @@ def post_wrapper(post: Post):
         right: 0;
         left: 0;
     }}
+    
+    @media (max-width: 1024px) {{
+        .$CLASS_NAME > div:first-child > div:first-child {{
+            max-inline-size: 60%;
+        }}
+    }}
     """,
     )
     with ui.element("div").style(f"{full_width}").classes(post_class_name) as card:
